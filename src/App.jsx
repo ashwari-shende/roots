@@ -9,6 +9,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/archive" element={<Archive />} />
       <Route path="/chat" element={<Chatbot />} />
+      <Route path="/record" element={<RecordPage />} />
     </Routes>
   )
 }
