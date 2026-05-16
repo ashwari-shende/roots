@@ -1,48 +1,16 @@
-# Roots
-*Where family stories become community memory*
+# React + Vite
 
----
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## The Problem
-Elders die with stories no one recorded. Neighborhoods change and forget what they were. Local history disappears because the everyday people who lived it left nothing behind.
+Currently, two official plugins are available:
 
-## What It Does
-Roots is a voice-first platform where families record personal stories that become a searchable, shared community archive — powered by Amazon Bedrock.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-Record a voice memo. Bedrock transcribes, translates, and extracts the people, places, and moments inside it. Ask the archive a question. Hear the answer in the words of the people who lived it.
+## React Compiler
 
----
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## AWS Services
+## Expanding the ESLint configuration
 
-| Service | Purpose |
-|---|---|
-| **Amazon Bedrock** | Story extraction, RAG chatbot, guided recording agent, guardrails |
-| **AWS Lambda** | Serverless processing pipeline |
-| **API Gateway** | Frontend ↔ backend |
-| **Amazon S3** | Audio, photo, document storage |
-| **Amazon Transcribe** | Voice → text |
-| **Amazon Translate** | Multilingual support |
-| **Amazon DynamoDB** | Story metadata and privacy settings |
-| **Amazon OpenSearch** | Vector store for Bedrock Knowledge Base |
-
----
-
-## Architecture
-Upload → API Gateway → Lambda → Transcribe → Translate
-↓
-Bedrock (Claude + Titan)
-↓
-DynamoDB + OpenSearch (RAG)
-↓
-Community Chatbot
-
----
-
-## Privacy
-Every story defaults to **Private**. Contributors choose: `Private → Family → Community`. Bedrock Guardrails enforce access at every layer.
-
----
-
-## Why We Built This
-Built with gratitude — for grandmothers whose stories are still living in them, and neighborhoods that remember what they were.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
