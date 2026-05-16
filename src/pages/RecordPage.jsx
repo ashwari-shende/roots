@@ -2,6 +2,8 @@ import { useState, useRef } from "react";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from "uuid";
+import { theme } from "../theme";
+import { useNavigate } from "react-router-dom";
 
 const s3 = new S3Client({
   region: import.meta.env.VITE_AWS_REGION,
@@ -11,7 +13,7 @@ const s3 = new S3Client({
   },
 });
 
-export default function App() {
+export default function RecordPage() {
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioURL, setAudioURL] = useState(null);
@@ -20,21 +22,19 @@ export default function App() {
   const [status, setStatus] = useState("");
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const navigate = useNavigate();
 
-  // --- Mic recording ---
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorderRef.current = mediaRecorder;
     chunksRef.current = [];
-
     mediaRecorder.ondataavailable = (e) => chunksRef.current.push(e.data);
     mediaRecorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: "audio/webm" });
       setAudioBlob(blob);
       setAudioURL(URL.createObjectURL(blob));
     };
-
     mediaRecorder.start();
     setRecording(true);
     setUploadDone(false);
@@ -46,7 +46,6 @@ export default function App() {
     setRecording(false);
   };
 
-  // --- File upload fallback ---
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -56,14 +55,11 @@ export default function App() {
     setStatus("");
   };
 
-  // --- Send to S3 ---
   const uploadToS3 = async () => {
     if (!audioBlob) return;
     setUploading(true);
     setStatus("Uploading to S3...");
-
     const fileName = `recordings/${uuidv4()}.webm`;
-
     try {
       const upload = new Upload({
         client: s3,
@@ -74,7 +70,6 @@ export default function App() {
           ContentType: "audio/webm",
         },
       });
-
       await upload.done();
       setUploadDone(true);
       setStatus("✅ Uploaded! Pipeline is now processing your story.");
@@ -87,49 +82,130 @@ export default function App() {
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: "80px auto", fontFamily: "sans-serif", textAlign: "center" }}>
-      <h1>🌱 ROOTS</h1>
-      <p>Record or upload a story to preserve it forever.</p>
+    <div style={{
+      minHeight: "100vh",
+      backgroundColor: theme.colors.bgPrimary,
+      fontFamily: theme.fonts.body,
+      padding: "3rem 2rem",
+    }}>
+      <div style={{
+        maxWidth: "720px",
+        margin: "0 auto",
+      }}>
 
-      {/* Mic button */}
-      <button
-        onClick={recording ? stopRecording : startRecording}
-        style={{
-          fontSize: 48, background: "none", border: "none",
-          cursor: "pointer", marginBottom: 16
-        }}
-      >
-        {recording ? "⏹️" : "🎙️"}
-      </button>
-      <p>{recording ? "Recording... click to stop" : "Click to record"}</p>
-
-      {/* File upload */}
-      <p style={{ color: "#888" }}>— or upload an audio file —</p>
-      <input type="file" accept="audio/*" onChange={handleFileUpload} />
-
-      {/* Playback */}
-      {audioURL && (
-        <div style={{ marginTop: 24 }}>
-          <audio controls src={audioURL} style={{ width: "100%" }} />
+        {/* Header */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: "3rem",
+        }}>
+          <div>
+            <h1 style={{
+              fontFamily: theme.fonts.heading,
+              color: theme.colors.textPrimary,
+              fontSize: "2.5rem",
+              marginBottom: "0.5rem",
+              marginTop: 0,
+            }}>
+              Record a Story
+            </h1>
+            <p style={{ color: theme.colors.textMuted, margin: 0 }}>
+              Preserve a memory for the community archive
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/archive')}
+            style={{
+              padding: "0.6rem 1.2rem",
+              fontSize: "0.9rem",
+              backgroundColor: "transparent",
+              color: theme.colors.warmSand,
+              border: `1px solid ${theme.colors.warmSand}`,
+              borderRadius: "999px",
+              cursor: "pointer",
+              fontFamily: theme.fonts.body,
+              whiteSpace: "nowrap",
+            }}>
+            View Archive →
+          </button>
         </div>
-      )}
 
-      {/* Upload to S3 */}
-      {audioBlob && !uploadDone && (
-        <button
-          onClick={uploadToS3}
-          disabled={uploading}
-          style={{
-            marginTop: 16, padding: "12px 32px", fontSize: 16,
-            background: "#2d6a4f", color: "white", border: "none",
-            borderRadius: 8, cursor: "pointer"
-          }}
-        >
-          {uploading ? "Uploading..." : "Save Story"}
-        </button>
-      )}
+        {/* Recording card */}
+        <div style={{
+          backgroundColor: theme.colors.bgSecondary,
+          borderRadius: "12px",
+          padding: "2.5rem",
+          borderLeft: `4px solid ${theme.colors.forestGreen}`,
+          textAlign: "center",
+        }}>
 
-      {status && <p style={{ marginTop: 16 }}>{status}</p>}
+          {/* Mic button */}
+          <button
+            onClick={recording ? stopRecording : startRecording}
+            style={{
+              fontSize: 64,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              marginBottom: 8,
+              display: "block",
+              margin: "0 auto 8px auto",
+            }}
+          >
+            {recording ? "⏹️" : "🎙️"}
+          </button>
+          <p style={{ color: theme.colors.textMuted, marginBottom: "2rem" }}>
+            {recording ? "Recording... click to stop" : "Click to start recording"}
+          </p>
+
+          {/* Divider */}
+          <p style={{ color: theme.colors.textMuted, marginBottom: "1rem" }}>
+            — or upload an audio file —
+          </p>
+          <input
+            type="file"
+            accept="audio/*"
+            onChange={handleFileUpload}
+            style={{ color: theme.colors.textPrimary }}
+          />
+
+          {/* Playback */}
+          {audioURL && (
+            <div style={{ marginTop: "1.5rem" }}>
+              <audio controls src={audioURL} style={{ width: "100%" }} />
+            </div>
+          )}
+
+          {/* Save button */}
+          {audioBlob && !uploadDone && (
+            <button
+              onClick={uploadToS3}
+              disabled={uploading}
+              style={{
+                marginTop: "1.5rem",
+                padding: "0.75rem 2rem",
+                fontSize: "1rem",
+                backgroundColor: theme.colors.forestGreen,
+                color: "#fff",
+                border: "none",
+                borderRadius: "999px",
+                cursor: uploading ? "not-allowed" : "pointer",
+                fontFamily: theme.fonts.body,
+              }}
+            >
+              {uploading ? "Uploading..." : "Save Story"}
+            </button>
+          )}
+
+          {/* Status */}
+          {status && (
+            <p style={{ marginTop: "1rem", color: theme.colors.textPrimary }}>
+              {status}
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

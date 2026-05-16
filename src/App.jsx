@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Landing from './Landing'
 import Archive from './Archive'
 import Chatbot from './Chatbot'
+import RecordPage from './pages/RecordPage'
 
 export default function App() {
   return (

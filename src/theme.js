@@ -4,6 +4,7 @@ export const theme = {
       bgSecondary: '#252318',
       bgTertiary: '#2E2B1E',
       forestGreen: '#6B9E6B',
+      mediumGreen: '#7DB87D',
       deepForest: '#4E7A4E',
       warmSand: '#C4A882',
       textPrimary: '#F0EBE0',
