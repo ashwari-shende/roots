@@ -77,7 +77,7 @@ export default function Chatbot() {
         ]);
       } else {
         const sources = Array.isArray(data.sources)
-          ? data.sources.map((s) => ({ name: formatSourceName(s), raw: s }))
+          ? [...new Set(data.sources)].map((s) => ({ name: formatSourceName(s), raw: s }))
           : [];
         setMessages((prev) => [
           ...prev,
@@ -366,23 +366,23 @@ function MessageBubble({ message }) {
               gap: '0.4rem',
             }}
           >
-            <div
-              style={{
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+              <div style={{
                 fontSize: '0.72rem',
                 color: theme.colors.textMuted,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
               }}
             >
-              From the archive
+              From the archive: 
             </div>
             {message.sources.map((s, i) => (
               <div
                 key={i}
                 style={{
-                  border: `1px solid ${theme.colors.bgSecondary}`,
-                  padding: '0.6rem 0.85rem',
-                  borderRadius: '8px',
+                  //border: `1px solid ${theme.colors.bgSecondary}`,
+                  padding: '0.7rem 0.4rem',
+                  borderRadius: '5px',
                   fontSize: '0.85rem',
                   color: theme.colors.textPrimary,
                   fontStyle: 'italic',
@@ -391,6 +391,7 @@ function MessageBubble({ message }) {
                 {s.name}
               </div>
             ))}
+            </div>
           </div>
         )}
       </div>
