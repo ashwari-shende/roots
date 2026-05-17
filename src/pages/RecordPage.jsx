@@ -64,6 +64,9 @@ export default function RecordPage() {
     const id = uuidv4();
     const fileName = `recordings/${id}.webm`;
     setJobName(id);
+    
+    console.log("1. Starting upload, file size:", audioBlob.size, "bytes");
+    
     try {
       const upload = new Upload({
         client: s3,
@@ -74,7 +77,11 @@ export default function RecordPage() {
           ContentType: "audio/webm",
         },
       });
+
+      console.log("2. Upload object created, calling upload.done()");
       await upload.done();
+      console.log("3. Upload complete!");
+
       setUploadDone(true);
       setStatus("⏳ Processing your story...");
       pollForStory(id);
