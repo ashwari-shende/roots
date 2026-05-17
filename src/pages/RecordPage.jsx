@@ -14,6 +14,8 @@ const s3 = new S3Client({
 });
 
 export default function RecordPage() {
+  const [storyReady, setStoryReady] = useState(false);
+  const [jobName, setJobName] = useState(null);
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioURL, setAudioURL] = useState(null);
@@ -59,7 +61,9 @@ export default function RecordPage() {
     if (!audioBlob) return;
     setUploading(true);
     setStatus("Uploading to S3...");
-    const fileName = `recordings/${uuidv4()}.webm`;
+    const id = uuidv4();
+    const fileName = `recordings/${id}.webm`;
+    setJobName(id);
     try {
       const upload = new Upload({
         client: s3,
@@ -72,13 +76,34 @@ export default function RecordPage() {
       });
       await upload.done();
       setUploadDone(true);
-      setStatus("✅ Uploaded! Pipeline is now processing your story.");
+      setStatus("⏳ Processing your story...");
+      pollForStory(id);
     } catch (err) {
       console.error(err);
       setStatus("❌ Upload failed. Check your AWS credentials.");
     } finally {
       setUploading(false);
     }
+  };
+
+  const pollForStory = (id) => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/stories`);
+        const stories = await res.json();
+        const found = stories.find(s => s.storyId === id);
+        if (found) {
+          clearInterval(interval);
+          setStoryReady(true);
+          setStatus("✅ Story now in Archives!");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 10000); // check every 10 seconds
+
+    // Stop polling after 10 minutes
+    setTimeout(() => clearInterval(interval), 600000);
   };
 
   return (
@@ -184,7 +209,7 @@ export default function RecordPage() {
             {recording ? "🔴" : "🎙️"}
           </button>
           <p style={{ color: theme.colors.textMuted, marginBottom: "2rem" }}>
-            {recording ? "Recording... click to stop" : "Click to start recording"}
+            {recording ? "Recording... click to stop" : audioBlob && !recording ? "Audio recorded" : "Click to start recording"}
           </p>
 
           {/* Divider */}
@@ -228,11 +253,28 @@ export default function RecordPage() {
             </button>
           )}
 
-          {/* Status */}
           {status && (
-            <p style={{ marginTop: "1rem", color: theme.colors.textPrimary }}>
+            <p style={{ marginTop: "1rem", color: storyReady ? theme.colors.forestGreen : theme.colors.textPrimary }}>
               {status}
             </p>
+          )}
+          {storyReady && (
+            <button
+              onClick={() => navigate('/archive')}
+              style={{
+                marginTop: "1rem",
+                padding: "0.75rem 2rem",
+                fontSize: "1rem",
+                backgroundColor: "transparent",
+                color: theme.colors.warmSand,
+                border: `1px solid ${theme.colors.warmSand}`,
+                borderRadius: "999px",
+                cursor: "pointer",
+                fontFamily: theme.fonts.body,
+              }}
+            >
+              View in Archive
+            </button>
           )}
         </div>
       </div>

@@ -5,16 +5,19 @@
 
 import boto3
 import urllib.parse
+import os
 
 transcribe = boto3.client('transcribe')
 
 def lambda_handler(event, context):
+    # Get the uploaded file details from the S3 event
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'])
     
-    # Use filename as job name (strip folder and extension)
+    # Create a unique job name from the filename
     job_name = key.replace('recordings/', '').replace('.webm', '').replace('.mp3', '')
     
+    # Start transcription job
     transcribe.start_transcription_job(
         TranscriptionJobName=job_name,
         Media={'MediaFileUri': f's3://{bucket}/{key}'},
