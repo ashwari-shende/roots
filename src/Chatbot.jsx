@@ -105,6 +105,7 @@ export default function Chatbot() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          padding: '3rem 2rem',
         }}
       >
         <button
