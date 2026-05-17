@@ -4,12 +4,12 @@
 
 Voice-first community archive. Record a story in any language; an AWS-powered pipeline transcribes, translates, and indexes it; anyone can then ask the archive plain-language questions and get answers in the storytellers' own words.
 
-Built in 24 hours for the AWS hackathon. Track: **Cloud for Good**.
+Built in ~14 hours for the AWS hackathon. Track: **Cloud for Good**.
 
 ## Team
 
 - Ashwari Shende
-- [Partner name]
+- Defne Dingiloglu
 
 ## What we built
 
@@ -35,7 +35,7 @@ End-to-end latency from recording to chatbot-queryable: ~30–60 seconds.
 
 **Chatbot:** Question → API Gateway → Lambda → Bedrock `RetrieveAndGenerate` → returns answer + citations from the KB.
 
-See `docs/architecture.png` for the diagram.
+See `docs/architecture-story-ingestion.png` and `docs/architecture-chatbot-query.png` for the architecture diagrams.
 
 ## Repo structure
 
@@ -64,7 +64,7 @@ npm install
 npm run dev
 ```
 
-Frontend runs at `http://localhost:5173`. AWS handles everything else.
+Frontend runs at `http://localhost:5174`. AWS handles everything else.
 
 ## Pre-existing code
 

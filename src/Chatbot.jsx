@@ -14,15 +14,16 @@ const SUGGESTED_PROMPTS = [
 
 // Turn "s3://bucket/rosa-mendez.txt" or "rosa-mendez.txt" into "Rosa Mendez"
 function formatSourceName(raw) {
-  if (!raw) return 'Archive story';
-  const filename = String(raw).split('/').pop().replace(/\.txt$/i, '');
-  if (!filename) return 'Archive story';
-  return filename
-    .split(/[-_]/)
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
-}
+    if (!raw) return 'Archive story';
+    const filename = String(raw).split('/').pop().replace(/\.txt$/i, '');
+    if (!filename) return 'Archive story';
+    const cleaned = filename.replace(/-[a-f0-9]{8}$/i, '');
+    return cleaned
+      .split(/[-_]/)
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+  }
 
 export default function Chatbot() {
   const navigate = useNavigate();

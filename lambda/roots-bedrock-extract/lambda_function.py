@@ -90,13 +90,22 @@ Return only the JSON, no other text."""
 def upload_story_to_s3(item):
     """Format a DynamoDB item as natural prose and upload to the KB bucket."""
     body = format_story_text(item)
-    key = f"{item['storyId']}.txt"
+    name_slug = slugify(item.get('narratorName', 'unknown'))
+    short_id = item['storyId'][:8]
+    key = f"{name_slug}-{short_id}.txt"
     s3.put_object(
         Bucket=STORIES_BUCKET,
         Key=key,
         Body=body.encode('utf-8'),
         ContentType='text/plain; charset=utf-8',
     )
+
+def slugify(name):
+    """Turn 'Defne Bilgin' into 'defne-bilgin'. Strips anything unsafe for S3 keys."""
+    import re
+    name = (name or 'unknown').lower().strip()
+    name = re.sub(r'[^a-z0-9]+', '-', name)
+    return name.strip('-') or 'unknown'
 
 
 def format_story_text(item):
