@@ -35,48 +35,81 @@ export default function Archive() {
             minHeight: '100vh',
             backgroundColor: theme.colors.bgPrimary,
             fontFamily: theme.fonts.body,
-            padding: '3rem 2rem',
+            //padding: '3rem 2rem',
+            display: 'flex',
+            flexDirection: 'column',
         }}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                marginBottom: '3rem',
-                maxWidth: '720px',
-                margin: '0 auto 3rem auto',
-            }}>
-                <div>
-                    <h1 style={{
-                        fontFamily: theme.fonts.heading,
-                        color: theme.colors.textPrimary,
-                        fontSize: '2.5rem',
-                        marginBottom: '0.5rem',
-                        marginTop: 0,
-                    }}>
-                        Community Archive
-                    </h1>
-                    <p style={{ color: theme.colors.textMuted, margin: 0 }}>
-                        Stories preserved by the community, for the community
-                    </p>
-                </div>
-                <button
-                    onClick={() => navigate('/chat')}
-                    style={{
-                        padding: '0.6rem 1.2rem',
-                        fontSize: '0.9rem',
-                        backgroundColor: 'transparent',
-                        color: theme.colors.warmSand,
-                        border: `1px solid ${theme.colors.warmSand}`,
-                        borderRadius: '999px',
-                        cursor: 'pointer',
-                        fontFamily: theme.fonts.body,
-                        whiteSpace: 'nowrap',
-                    }}>
-                    Ask the Archive →
-                </button>
-            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '720px', margin: '0 auto' }}>
+            <header
+            style={{
+                padding: '1.25rem 2rem',
+                borderBottom: `1px solid ${theme.colors.bgSecondary}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '3rem 2rem',
+            }}
+        >
+            <button
+            onClick={() => navigate('/')}
+            style={{
+                background: 'none',
+                border: 'none',
+                color: theme.colors.textMuted,
+                fontFamily: theme.fonts.body,
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                letterSpacing: '0.02em',
+            }}
+            >
+            ← Roots
+            </button>
+            <div>
+              <h1
+                style={{
+                    fontFamily: theme.fonts.heading,
+                    color: theme.colors.textPrimary,
+                    fontSize: '2.5rem',
+                    marginBottom: '0.5rem',
+                    marginTop: 0,
+                }}
+            >
+                Community Archive
+            </h1>
+            <p style={{ color: theme.colors.textMuted, margin: 0}}>
+                Stories preserved by the community, for the community
+            </p>
+            </div>
+            <button
+                onClick={() => navigate('/archive')}
+                style={{
+                    padding: '0.6rem 1.2rem',
+                    fontSize: '0.9rem',
+                    backgroundColor: 'transparent',
+                    color: theme.colors.warmSand,
+                    border: `1px solid ${theme.colors.warmSand}`,
+                    borderRadius: '999px',
+                    cursor: 'pointer',
+                    fontFamily: theme.fonts.body,
+                    whiteSpace: 'nowrap',
+                }}>
+                Ask the Archive
+            </button>
+        </header>
+            {/* Archive Cards */}
+            <div style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: "center",
+            }}>
+            <div style={{
+                flexDirection: 'column', 
+                justifyContent: "center", 
+                gap: '2.5rem', 
+                maxWidth: '720px', 
+                margin: '0 auto',
+                display: "flex",
+            }}>
                 {mockStories.map(story => (
                     <div key={story.id} style={{
                         backgroundColor: theme.colors.bgSecondary,
@@ -97,6 +130,7 @@ export default function Archive() {
                     </div>
                 ))}
             </div>
+        </div>
         </div>
     )
 }

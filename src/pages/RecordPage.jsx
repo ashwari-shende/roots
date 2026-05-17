@@ -86,58 +86,86 @@ export default function RecordPage() {
       minHeight: "100vh",
       backgroundColor: theme.colors.bgPrimary,
       fontFamily: theme.fonts.body,
-      padding: "3rem 2rem",
+      //padding: "3rem 2rem",
+      display: 'flex',
+      flexDirection: 'column',
     }}>
-      <div style={{
-        maxWidth: "720px",
-        margin: "0 auto",
-      }}>
 
-        {/* Header */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "3rem",
-        }}>
-          <div>
-            <h1 style={{
-              fontFamily: theme.fonts.heading,
-              color: theme.colors.textPrimary,
-              fontSize: "2.5rem",
-              marginBottom: "0.5rem",
-              marginTop: 0,
-            }}>
-              Record a Story
-            </h1>
-            <p style={{ color: theme.colors.textMuted, margin: 0 }}>
-              Preserve a memory for the community archive
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/archive')}
-            style={{
-              padding: "0.6rem 1.2rem",
-              fontSize: "0.9rem",
-              backgroundColor: "transparent",
-              color: theme.colors.warmSand,
-              border: `1px solid ${theme.colors.warmSand}`,
-              borderRadius: "999px",
-              cursor: "pointer",
-              fontFamily: theme.fonts.body,
-              whiteSpace: "nowrap",
-            }}>
-            View Archive →
-          </button>
+      <header
+        style={{
+          padding: '1.25rem 2rem',
+          borderBottom: `1px solid ${theme.colors.bgSecondary}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '3rem 2rem',
+        }}
+      >
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: theme.colors.textMuted,
+            fontFamily: theme.fonts.body,
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+            letterSpacing: '0.02em',
+          }}
+        >
+          ← Roots
+        </button>
+        <div>
+          <h1
+          style={{
+            fontFamily: theme.fonts.heading,
+            color: theme.colors.textPrimary,
+            fontSize: '2.5rem',
+            marginBottom: '0.5rem',
+            marginTop: 0,
+          }}
+        >
+          Record a Story
+        </h1>
+        <p style={{ color: theme.colors.textMuted, margin: 0}}>
+          Preserve a memory for the community archive
+        </p>
         </div>
+        <button
+          onClick={() => navigate('/archive')}
+          style={{
+            padding: '0.6rem 1.2rem',
+            fontSize: '0.9rem',
+            backgroundColor: 'transparent',
+            color: theme.colors.warmSand,
+            border: `1px solid ${theme.colors.warmSand}`,
+            borderRadius: '999px',
+            cursor: 'pointer',
+            fontFamily: theme.fonts.body,
+            whiteSpace: 'nowrap',
+          }}>
+          View Archive
+        </button>
+      </header>
 
         {/* Recording card */}
         <div style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center", 
+        }}>
+        <div style={{
+          width: "100%",
           backgroundColor: theme.colors.bgSecondary,
           borderRadius: "12px",
           padding: "2.5rem",
-          borderLeft: `4px solid ${theme.colors.forestGreen}`,
+          border: `4px solid ${theme.colors.forestGreen}`,
           textAlign: "center",
+          minHeight: "500px",
+          display: "flex",              // ← add
+          flexDirection: "column",      // ← add
+          justifyContent: "center",     // ← add (vertically centers contents)
+          alignItems: "center",
         }}>
 
           {/* Mic button */}
@@ -153,7 +181,7 @@ export default function RecordPage() {
               margin: "0 auto 8px auto",
             }}
           >
-            {recording ? "⏹️" : "🎙️"}
+            {recording ? "🔴" : "🎙️"}
           </button>
           <p style={{ color: theme.colors.textMuted, marginBottom: "2rem" }}>
             {recording ? "Recording... click to stop" : "Click to start recording"}
@@ -163,12 +191,14 @@ export default function RecordPage() {
           <p style={{ color: theme.colors.textMuted, marginBottom: "1rem" }}>
             — or upload an audio file —
           </p>
-          <input
-            type="file"
-            accept="audio/*"
-            onChange={handleFileUpload}
-            style={{ color: theme.colors.textPrimary }}
-          />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={handleFileUpload}
+              style={{ color: theme.colors.textPrimary}}
+            />
+          </div>
 
           {/* Playback */}
           {audioURL && (

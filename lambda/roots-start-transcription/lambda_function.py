@@ -19,7 +19,7 @@ def lambda_handler(event, context):
         TranscriptionJobName=job_name,
         Media={'MediaFileUri': f's3://{bucket}/{key}'},
         MediaFormat='webm',
-        LanguageCode='en-US',
+        IdentifyLanguage=True,
         OutputBucketName=bucket,
         OutputKey=f'transcriptions/{job_name}.json'
     )

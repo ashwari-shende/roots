@@ -124,10 +124,10 @@ export default function Chatbot() {
         <h1
           style={{
             fontFamily: theme.fonts.heading,
-            fontSize: '1.4rem',
-            fontWeight: 500,
-            margin: 0,
-            letterSpacing: '0.01em',
+            color: theme.colors.textPrimary,
+            fontSize: '2.5rem',
+            marginBottom: '0.5rem',
+            marginTop: 0,
           }}
         >
           Ask the Archive
@@ -135,17 +135,16 @@ export default function Chatbot() {
         <button
           onClick={() => navigate('/archive')}
           style={{
-            background: 'none',
-            border: `1px solid ${theme.colors.bgSecondary}`,
-            color: theme.colors.textMuted,
-            fontFamily: theme.fonts.body,
-            fontSize: '0.85rem',
-            padding: '0.45rem 0.9rem',
+            padding: '0.6rem 1.2rem',
+            fontSize: '0.9rem',
+            backgroundColor: 'transparent',
+            color: theme.colors.warmSand,
+            border: `1px solid ${theme.colors.warmSand}`,
             borderRadius: '999px',
             cursor: 'pointer',
-            letterSpacing: '0.02em',
-          }}
-        >
+            fontFamily: theme.fonts.body,
+            whiteSpace: 'nowrap',
+          }}>
           Browse stories
         </button>
       </header>
