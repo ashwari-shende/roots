@@ -41,6 +41,7 @@ export default function Archive() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                padding: '3rem 2rem',
             }}>
                 <button onClick={() => navigate('/')} style={{
                     background: 'none', border: 'none',
@@ -112,7 +113,7 @@ export default function Archive() {
                                 </span>
                             </div>
                             <div style={{ color: theme.colors.textMuted, fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-                                {story.location || 'Unkown Location'} · {story.year || 'Unkown Date'}
+                                {story.location || 'Unknown Location'} · {story.year || 'Unknown Date'}
                             </div>
                             <p style={{ color: theme.colors.textPrimary, lineHeight: 1.7, margin: 0, fontFamily: theme.fonts.heading }}>
                                 "{story.preview || story.previewQuote || 'No Preview Available'}"
@@ -151,8 +152,19 @@ export default function Archive() {
                         <div style={{ color: theme.colors.textMuted, fontSize: '0.85rem', marginBottom: '1.5rem' }}>
                             {selectedStory.location || 'Unknown Year'} · {selectedStory.year || 'Unknown Date'}
                         </div>
+                        {selectedStory.sourceLanguage && selectedStory.sourceLanguage !== 'English' && (
+                            <div style={{ 
+                                color: theme.colors.warmSand, 
+                                fontSize: '0.85rem', 
+                                marginBottom: '1.5rem',
+                                fontStyle: 'italic'
+                            }}>
+                                Original language: {selectedStory.sourceLanguage}
+                            </div>
+                        )}
+
                         <p style={{ color: theme.colors.textPrimary, lineHeight: 1.8, fontFamily: theme.fonts.heading }}>
-                            {selectedStory.originalTranscript || selectedStory.transcript || selectedStory.previewQuote || 'No Preview Available'}
+                            {selectedStory.translatedText || selectedStory.originalTranscript || selectedStory.previewQuote || 'No Preview Available'}
                         </p>
                     </div>
                 </div>
