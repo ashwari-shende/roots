@@ -158,7 +158,7 @@ export default function Chatbot() {
           style={{
             fontFamily: theme.fonts.heading,
             color: theme.colors.textPrimary,
-            fontSize: '1.15rem',
+            fontSize: '2.5rem',
             margin: 0,
             fontWeight: 500,
             letterSpacing: '0.01em',
