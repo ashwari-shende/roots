@@ -1,21 +1,30 @@
-#Triggered through direct call from roots-translate/lambda_function.py.
-#Sends translated text to Claude and asks for information like name of
-#speaker, year video was taken, location, theme, summary, and preview quote.
-#Claude returns as JSON and this is saved into DynamoDB to be displayed by Archive page.
+# Triggered through direct call from roots-claude-translate/lambda_function.py.
+# Sends translated text to Claude and asks for structured info (name, year, location, theme, summary, preview).
+# Saves to DynamoDB for the Archive page, then uploads a prose version to S3 and triggers a
+# Bedrock Knowledge Base ingestion job so the chatbot can answer questions about the new story.
 
 import boto3
 import json
+import os
 
 bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
+bedrock_agent = boto3.client('bedrock-agent', region_name='us-east-1')
+s3 = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('roots-stories')
+
+# Knowledge Base config — override via env vars if these IDs ever change
+STORIES_BUCKET = os.environ.get('STORIES_BUCKET', 'roots-stories-archive')
+KB_ID = os.environ.get('KB_ID', 'VBOYBDAIY7')
+KB_DATA_SOURCE_ID = os.environ.get('KB_DATA_SOURCE_ID', 'SLXRXVOU1Z')
+
 
 def lambda_handler(event, context):
     job_name = event['job_name']
     original_transcript = event['original_transcript']
     translated_text = event['translated_text']
     source_language = event['source_language']
-    
+
     # Ask Claude to extract story details
     prompt = f"""You are helping preserve community stories. Extract structured information from this story transcript.
 
@@ -42,12 +51,11 @@ Return only the JSON, no other text."""
             'messages': [{'role': 'user', 'content': prompt}]
         })
     )
-    
+
     result = json.loads(response['body'].read())
     extracted = json.loads(result['content'][0]['text'])
-    
-    # Save to DynamoDB
-    table.put_item(Item={
+
+    item = {
         'storyId': job_name,
         'narratorName': extracted.get('narrator_name', 'Unknown'),
         'year': extracted.get('year', ''),
@@ -58,7 +66,60 @@ Return only the JSON, no other text."""
         'originalTranscript': original_transcript,
         'translatedText': translated_text,
         'sourceLanguage': source_language,
-    })
-    
-    print(f"Story {job_name} saved to DynamoDB!")
-    return {'statusCode': 200, 'body': 'Story saved to DynamoDB'}
+    }
+
+    # Save to DynamoDB
+    table.put_item(Item=item)
+    print(f"Story {job_name} saved to DynamoDB")
+
+    # Upload to S3 + trigger KB ingestion (failures here are logged but do NOT fail the handler —
+    # the story is already preserved in DynamoDB and Archive, this is just the chatbot index)
+    try:
+        upload_story_to_s3(item)
+        trigger_kb_ingestion()
+        print(f"Story {job_name} uploaded to S3 and KB ingestion started")
+    except Exception as e:
+        print(f"WARNING: chatbot indexing failed for {job_name}: {e}")
+
+    return {'statusCode': 200, 'body': 'Story saved to DynamoDB and indexed'}
+
+
+def upload_story_to_s3(item):
+    """Format a DynamoDB item as natural prose and upload to the KB bucket."""
+    body = format_story_text(item)
+    key = f"{item['storyId']}.txt"
+    s3.put_object(
+        Bucket=STORIES_BUCKET,
+        Key=key,
+        Body=body.encode('utf-8'),
+        ContentType='text/plain; charset=utf-8',
+    )
+
+
+def format_story_text(item):
+    """Turn a DynamoDB item into the narrative .txt format the KB indexes."""
+    name = item.get('narratorName') or 'Unknown'
+    year = item.get('year') or 'unknown year'
+    location = item.get('location') or 'unknown location'
+    theme = item.get('theme') or 'Other'
+    summary = item.get('summary') or ''
+    preview = item.get('preview') or ''
+    transcript = item.get('translatedText') or ''
+
+    return (
+        f"Story from {name}\n"
+        f"Year: {year}\n"
+        f"Location: {location}\n"
+        f"Theme: {theme}\n\n"
+        f"Summary: {summary}\n\n"
+        f"Preview: {preview}\n\n"
+        f"Full story:\n{transcript}\n"
+    )
+
+
+def trigger_kb_ingestion():
+    """Kick off a Bedrock KB ingestion job. Fire-and-forget — the job runs async."""
+    bedrock_agent.start_ingestion_job(
+        knowledgeBaseId=KB_ID,
+        dataSourceId=KB_DATA_SOURCE_ID,
+    )
