@@ -44,7 +44,7 @@ Return ONLY a JSON object with these fields:
 Return only the JSON, no other text."""
 
     response = bedrock.invoke_model(
-        modelId='anthropic.claude-haiku-4-5-20251001',
+        modelId='us.anthropic.claude-sonnet-4-5-20250929-v1:0',
         body=json.dumps({
             'anthropic_version': 'bedrock-2023-05-31',
             'max_tokens': 1000,
@@ -53,7 +53,10 @@ Return only the JSON, no other text."""
     )
 
     result = json.loads(response['body'].read())
-    extracted = json.loads(result['content'][0]['text'])
+    #extracted = json.loads(result['content'][0]['text'])
+    raw_text = result['content'][0]['text']
+    clean_text = raw_text.strip().removeprefix('```json').removeprefix('```').removesuffix('```').strip()
+    extracted = json.loads(clean_text)
 
     item = {
         'storyId': job_name,

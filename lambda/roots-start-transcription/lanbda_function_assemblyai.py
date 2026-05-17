@@ -2,8 +2,9 @@ import boto3
 import urllib.parse
 import json
 import urllib.request
+import urllib.error
 
-ASSEMBLYAI_KEY = "your_assemblyai_key_here"
+ASSEMBLYAI_KEY = "1b4e0eee290b40c299bd15c20e8ca8d2"
 
 s3 = boto3.client('s3')
 lambda_client = boto3.client('lambda')
@@ -13,29 +14,47 @@ def lambda_handler(event, context):
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'])
     job_name = key.replace('recordings/', '').replace('.webm', '').replace('.mp3', '')
 
-    # Generate presigned URL so AssemblyAI can access the private S3 file
-    presigned_url = s3.generate_presigned_url(
-        'get_object',
-        Params={'Bucket': bucket, 'Key': key},
-        ExpiresIn=3600
-    )
+    # Download audio from S3
+    s3_response = s3.get_object(Bucket=bucket, Key=key)
+    audio_data = s3_response['Body'].read()
+    print(f"Downloaded {len(audio_data)} bytes from S3")
 
-    # Submit to AssemblyAI
-    request_data = json.dumps({'audio_url': presigned_url}).encode('utf-8')
-    req = urllib.request.Request(
-        'https://api.assemblyai.com/v2/transcript',
-        data=request_data,
+    # Upload to AssemblyAI
+    upload_req = urllib.request.Request(
+        'https://api.assemblyai.com/v2/upload',
+        data=audio_data,
         headers={
             'authorization': ASSEMBLYAI_KEY,
-            'content-type': 'application/json'
+            'content-type': 'application/octet-stream'
         }
     )
-    response = urllib.request.urlopen(req)
-    transcript_id = json.loads(response.read())['id']
+    upload_response = urllib.request.urlopen(upload_req)
+    upload_url = json.loads(upload_response.read())['upload_url']
+    print(f"Uploaded to AssemblyAI: {upload_url}")
 
-    print(f"AssemblyAI job started: {transcript_id}")
+    # Submit transcript job
+    try:
+        #request_data = json.dumps({'audio_url': upload_url}).encode('utf-8')
+        request_data = json.dumps({
+            'audio_url': upload_url,
+            'speech_models': ['universal-2']
+        }).encode('utf-8')
+        req = urllib.request.Request(
+            'https://api.assemblyai.com/v2/transcript',
+            data=request_data,
+            headers={
+                'authorization': ASSEMBLYAI_KEY,
+                'content-type': 'application/json'
+            }
+        )
+        response = urllib.request.urlopen(req)
+        transcript_id = json.loads(response.read())['id']
+        print(f"AssemblyAI job started: {transcript_id}")
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        print(f"AssemblyAI error {e.code}: {error_body}")
+        raise
 
-    # Trigger polling Lambda
     lambda_client.invoke(
         FunctionName='roots-poll-assemblyai',
         InvocationType='Event',

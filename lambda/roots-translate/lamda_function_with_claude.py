@@ -18,7 +18,12 @@ def lambda_handler(event, context):
                 'role': 'user',
                 'content': f"""Detect the language of this text and translate it to English.
 If it is already in English, return it as-is.
-Return ONLY the translated text, nothing else.
+
+Return ONLY a JSON object with two fields:
+{{
+  "detected_language": "the full English name of the language, e.g. Spanish, Somali, English",
+  "translated_text": "the full translated text in English"
+}}
 
 Text:
 {transcript}"""
@@ -27,7 +32,15 @@ Text:
     )
 
     result = json.loads(response['body'].read())
-    translated_text = result['content'][0]['text'].strip()
+    raw_text = result['content'][0]['text'].strip()
+    clean_text = raw_text.removeprefix('```json').removeprefix('```').removesuffix('```').strip()
+    parsed = json.loads(clean_text)
+
+    detected_language = parsed.get('detected_language', 'English')
+    translated_text = parsed.get('translated_text', transcript)
+
+    print(f"Detected language: {detected_language}")
+    print(f"Translated text: {translated_text[:100]}...")
 
     lambda_client.invoke(
         FunctionName='roots-bedrock-extract',
@@ -37,7 +50,7 @@ Text:
             'bucket': bucket,
             'original_transcript': transcript,
             'translated_text': translated_text,
-            'source_language': 'auto'
+            'source_language': detected_language
         })
     )
 
