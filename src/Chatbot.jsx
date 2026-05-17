@@ -3,12 +3,26 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { theme } from './theme';
 
+const API_URL = import.meta.env.VITE_CHATBOT_API_URL;
+
 const SUGGESTED_PROMPTS = [
-  "What stories did grandma tell about her childhood?",
-  "Tell me about family recipes passed down",
-  "What did our elders say about hard times?",
-  "Share a memory about a family gathering",
+  "What did Rosa learn from her mother?",
+  "Tell me about a story involving a refugee camp",
+  "Whose grandson runs his deli now?",
+  "Are there stories about brothers helping each other?",
 ];
+
+// Turn "s3://bucket/rosa-mendez.txt" or "rosa-mendez.txt" into "Rosa Mendez"
+function formatSourceName(raw) {
+  if (!raw) return 'Archive story';
+  const filename = String(raw).split('/').pop().replace(/\.txt$/i, '');
+  if (!filename) return 'Archive story';
+  return filename
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export default function Chatbot() {
   const navigate = useNavigate();
@@ -28,35 +42,53 @@ export default function Chatbot() {
     setInput('');
     setLoading(true);
 
-    try {
-      // TODO: swap mock for real Bedrock RAG endpoint via API Gateway
-      // const res = await fetch(import.meta.env.VITE_RAG_ENDPOINT, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ query: text }),
-      // });
-      // const data = await res.json();
-      // setMessages((prev) => [...prev, {
-      //   id: Date.now() + 1,
-      //   role: 'assistant',
-      //   content: data.answer,
-      //   sources: data.sources, // [{ title, storyteller, year }]
-      // }]);
-
-      await new Promise((r) => setTimeout(r, 1100));
+    if (!API_URL) {
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           role: 'assistant',
           content:
-            "Your grandmother Esperanza spoke often about summers in her village, when the family would gather under the lemon tree after supper. She remembered her own grandmother humming old songs while shelling beans, and said those evenings taught her what 'home' really meant.",
-          sources: [
-            { title: "Summers in the village", storyteller: 'Esperanza Morales', year: 1998 },
-            { title: 'Songs from the old country', storyteller: 'Esperanza Morales', year: 2001 },
-          ],
+            "Chatbot isn't configured. Set VITE_CHATBOT_API_URL in .env.local and restart the dev server.",
+          error: true,
         },
       ]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text }),
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: data.error,
+            error: true,
+          },
+        ]);
+      } else {
+        const sources = Array.isArray(data.sources)
+          ? data.sources.map((s) => ({ name: formatSourceName(s), raw: s }))
+          : [];
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: data.answer || "I couldn't find an answer in the archive.",
+            sources,
+          },
+        ]);
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -125,9 +157,10 @@ export default function Chatbot() {
           style={{
             fontFamily: theme.fonts.heading,
             color: theme.colors.textPrimary,
-            fontSize: '2.5rem',
-            marginBottom: '0.5rem',
-            marginTop: 0,
+            fontSize: '1.15rem',
+            margin: 0,
+            fontWeight: 500,
+            letterSpacing: '0.01em',
           }}
         >
           Ask the Archive
@@ -144,7 +177,8 @@ export default function Chatbot() {
             cursor: 'pointer',
             fontFamily: theme.fonts.body,
             whiteSpace: 'nowrap',
-          }}>
+          }}
+        >
           Browse stories
         </button>
       </header>
@@ -181,7 +215,7 @@ export default function Chatbot() {
                 lineHeight: 1.6,
               }}
             >
-              Ask anything. The archive will draw from stories your family has shared.
+              Ask anything. The archive will draw from stories the community has shared.
             </p>
             <div
               style={{
@@ -349,18 +383,11 @@ function MessageBubble({ message }) {
                   padding: '0.6rem 0.85rem',
                   borderRadius: '8px',
                   fontSize: '0.85rem',
-                  color: theme.colors.textMuted,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
+                  color: theme.colors.textPrimary,
+                  fontStyle: 'italic',
                 }}
               >
-                <span style={{ color: theme.colors.textPrimary, fontStyle: 'italic' }}>
-                  "{s.title}"
-                </span>
-                <span>
-                  {s.storyteller} · {s.year}
-                </span>
+                {s.name}
               </div>
             ))}
           </div>
