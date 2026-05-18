@@ -21,7 +21,7 @@ def lambda_handler(event, context):
 
     # Upload to AssemblyAI
     upload_req = urllib.request.Request(
-        'https://api.assemblyai.com/v2/upload',
+        'assemblyai.url',
         data=audio_data,
         headers={
             'authorization': ASSEMBLYAI_KEY,
@@ -40,7 +40,7 @@ def lambda_handler(event, context):
             'speech_models': ['universal-2']
         }).encode('utf-8')
         req = urllib.request.Request(
-            'https://api.assemblyai.com/v2/transcript',
+            'assemblyai.url',
             data=request_data,
             headers={
                 'authorization': ASSEMBLYAI_KEY,
