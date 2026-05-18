@@ -15,8 +15,8 @@ table = dynamodb.Table('roots-stories')
 
 # Knowledge Base config — override via env vars if these IDs ever change
 STORIES_BUCKET = os.environ.get('STORIES_BUCKET', 'roots-stories-archive')
-KB_ID = os.environ.get('KB_ID', 'VBOYBDAIY7')
-KB_DATA_SOURCE_ID = os.environ.get('KB_DATA_SOURCE_ID', 'SLXRXVOU1Z')
+KB_ID = os.environ.get('KB_ID', 'id')
+KB_DATA_SOURCE_ID = os.environ.get('KB_DATA_SOURCE_ID', 'id')
 
 
 def lambda_handler(event, context):
