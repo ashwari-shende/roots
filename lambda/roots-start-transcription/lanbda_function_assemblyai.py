@@ -4,7 +4,7 @@ import json
 import urllib.request
 import urllib.error
 
-ASSEMBLYAI_KEY = "1b4e0eee290b40c299bd15c20e8ca8d2"
+ASSEMBLYAI_KEY = "paste_api_key"
 
 s3 = boto3.client('s3')
 lambda_client = boto3.client('lambda')
